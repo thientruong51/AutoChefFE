@@ -82,8 +82,8 @@ const Navbar = () => {
 
         {/* Dropdown Menu */}
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-          <MenuItem onClick={handleMenuClose}>Hồ sơ</MenuItem>
-          <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
+          <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+          <MenuItem onClick={handleLogout}>Log out</MenuItem>
         </Menu>
       </Toolbar>
     </AppBar>
