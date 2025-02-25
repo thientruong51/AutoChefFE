@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -17,24 +17,30 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const demoUser = { email: "admin@example.com", password: "123456" };
-    if (!localStorage.getItem("user")) {
-      localStorage.setItem("user", JSON.stringify(demoUser));
-    }
-  }, []);
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("https://autochefsystem.azurewebsites.net/api/Authentication/sign-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "accept": "*/*" },
+        body: JSON.stringify({ userName: email, password }),
+      });
 
-  const handleLogin = () => {
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    
-    if (savedUser && savedUser.email === email && savedUser.password === password) {
-      localStorage.setItem("isAuthenticated", "true");
-      navigate("/");
-    } else {
-      setError("Email hoặc mật khẩu không đúng!");
+      const token = await response.text(); // Nếu BE trả về token dưới dạng chuỗi
+      console.log("Token received:", token); 
+
+      if (response.ok && token) {
+        localStorage.setItem("token", token);
+        navigate("/"); 
+      } else {
+        setError("Email hoặc mật khẩu không đúng!");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setError("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
-
+  
+  
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
       {/* Left Side - Login Form */}
@@ -110,7 +116,6 @@ const Login = () => {
         }}
       >
         <img src="src/assets/logo.png" alt="Chakra Logo" width={380} height={380} />
-        
       </Box>
     </Box>
   );

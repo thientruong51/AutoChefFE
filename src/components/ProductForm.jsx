@@ -1,21 +1,18 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material";
 
 const ProductForm = ({ open, handleClose, onSave, product }) => {
   const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    category: "",
-    image: "",
+    recipeId: 0,
+    recipeName: "",
+    ingredients: "",
   });
 
   useEffect(() => {
     if (product) {
       setFormData(product);
     } else {
-      setFormData({ name: "", price: "", category: "", image: "" });
+      setFormData({ recipeId: 0, recipeName: "", ingredients: "" });
     }
   }, [product]);
 
@@ -25,12 +22,10 @@ const ProductForm = ({ open, handleClose, onSave, product }) => {
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>{product ? "Edit product" : "Add new product"}</DialogTitle>
+      <DialogTitle>{product ? "Edit Product" : "Add New Product"}</DialogTitle>
       <DialogContent>
-        <TextField label="Product name" name="name" fullWidth margin="dense" value={formData.name} onChange={handleChange} />
-        <TextField label="Price" name="price" fullWidth margin="dense" value={formData.price} onChange={handleChange} />
-        <TextField label="Category" name="category" fullWidth margin="dense" value={formData.category} onChange={handleChange} />
-        <TextField label="Image (URL)" name="image" fullWidth margin="dense" value={formData.image} onChange={handleChange} />
+        <TextField label="Recipe Name" name="recipeName" fullWidth margin="dense" value={formData.recipeName} onChange={handleChange} />
+        <TextField label="Ingredients" name="ingredients" fullWidth margin="dense" value={formData.ingredients} onChange={handleChange} />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="error">Cancel</Button>

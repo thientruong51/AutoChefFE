@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
@@ -10,7 +10,14 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 const PrivateRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("isAuthenticated");
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
+
+  useEffect(() => {
+    const handleStorageChange = () => setIsAuthenticated(!!localStorage.getItem("token"));
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
