@@ -21,6 +21,7 @@ const Sidebar = () => {
     { text: "Employee", icon: <People />, path: "/employees" },
     { text: "Product", icon: <RamenDiningIcon />, path: "/products" },
     { text: "Order", icon: <ListAltIcon />, path: "/orders" },
+    { text: "RecipeStep", icon: <ListAltIcon />, path: "/recipeSteps" },
   ];
 
   return (
@@ -61,7 +62,7 @@ const Sidebar = () => {
               component={Link}
               to={item.path}
               sx={{
-                
+
                 borderRadius: "10px",
                 mb: 1,
                 backgroundColor: location.pathname === item.path ? "#E3F2FD" : "transparent",
