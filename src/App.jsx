@@ -9,6 +9,7 @@ import Orders from "./pages/Orders";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MainLayout from "./layouts/MainLayout";
+import RecipeSteps from "./pages/RecipeSteps"
 
 const PrivateRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
@@ -42,6 +43,7 @@ const App = () => {
       <Route path="employees" element={<Employees />} />
       <Route path="products" element={<Products />} />
       <Route path="orders" element={<Orders />} />
+      <Route path="recipeSteps" element={<RecipeSteps />} />
     </Route>
   </Routes>
 </Router>
