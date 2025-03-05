@@ -1,43 +1,77 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TextField, Avatar, Box, Typography, Button, IconButton, Menu, MenuItem
+  TextField, Avatar, Box, Typography, Button, IconButton, Menu, MenuItem, TablePagination
 } from "@mui/material";
 import { Edit, Delete, Add, MoreVert } from "@mui/icons-material";
 import EmployeeForm from "./EmployeeForm";
 
-const initialEmployees = [
-  { id: 1, name: "Nguyễn Văn A", position: "Quản lý", email: "a@example.com", avatar: "https://i.pravatar.cc/50?u=a", status: "Active" },
-  { id: 2, name: "Trần Thị B", position: "Nhân viên bán hàng", email: "b@example.com", avatar: "https://i.pravatar.cc/50?u=b", status: "Active" },
-  { id: 3, name: "Lê Văn C", position: "Bếp trưởng", email: "c@example.com", avatar: "https://i.pravatar.cc/50?u=c", status: "Active" },
-  { id: 4, name: "Phạm Thị D", position: "Kế toán", email: "d@example.com", avatar: "https://i.pravatar.cc/50?u=d", status: "Edit" },
-];
+const API_URL = "https://autochefsystem.azurewebsites.net/api/Users";
+
+const roleMapping = {
+  1: "Admin",
+  2: "Staff",
+  3: "Manager"
+};
 
 const EmployeeTable = () => {
-  const [employees, setEmployees] = useState(initialEmployees);
+  const [employees, setEmployees] = useState([]);
   const [search, setSearch] = useState("");
   const [openForm, setOpenForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const filteredEmployees = employees.filter(emp =>
-    emp.name.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
-  const handleSave = (data) => {
-    if (editingEmployee) {
-      setEmployees(employees.map(emp => (emp.id === editingEmployee.id ? { ...data, id: emp.id } : emp)));
-    } else {
-      setEmployees([...employees, { ...data, id: Date.now() }]);
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch(`${API_URL}/all?pageNumber=1&pageSize=10`, {
+        headers: { "accept": "*/*" }
+      });
+      const data = await response.json();
+
+      console.log("API Response:", data);
+
+      if (data?.users) {
+        setEmployees(data.users);  // Chỉ lấy mảng users
+      } else {
+        setEmployees([]);
+      }
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      setEmployees([]);
     }
-    setOpenForm(false);
-    setEditingEmployee(null);
   };
 
-  const handleDelete = (id) => {
-    setEmployees(employees.filter(emp => emp.id !== id));
+
+
+
+
+  const handleSave = async (data) => {
+    try {
+      const method = editingEmployee ? "PUT" : "POST";
+      const response = await fetch(API_URL, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, userId: editingEmployee?.id || 0 })
+      });
+
+      if (response.ok) {
+        fetchEmployees();
+        setOpenForm(false);
+        setEditingEmployee(null);
+      }
+    } catch (error) {
+      console.error("Error saving employee:", error);
+    }
   };
+
+
 
   const handleMenuClick = (event, employee) => {
     setAnchorEl(event.currentTarget);
@@ -46,6 +80,49 @@ const EmployeeTable = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const filteredEmployees = employees.filter(emp =>
+    emp.userName.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+  
+  const handleChangeRole = async (employee) => {
+    const newRoleId = employee.roleId === 1 ? 2 : employee.roleId === 2 ? 3 : 1; // Vòng xoay đổi role
+    try {
+      await fetch(`${API_URL}/${employee.userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...employee, roleId: newRoleId })
+      });
+      fetchEmployees();
+      handleMenuClose();
+    } catch (error) {
+      console.error("Error changing role:", error);
+    }
+  };
+
+  const handleSoftDelete = async (id) => {
+    try {
+      const employeeToUpdate = employees.find(emp => emp.userId === id);
+      await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...employeeToUpdate, isActive: false })
+      });
+      fetchEmployees();
+      handleMenuClose();
+    } catch (error) {
+      console.error("Error deactivating employee:", error);
+    }
   };
 
   return (
@@ -72,80 +149,62 @@ const EmployeeTable = () => {
         </Button>
       </Box>
 
-
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table>
           <TableHead sx={{ backgroundColor: "#f8f9fa" }}>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Staff ID</TableCell>
+
               <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }} align="center">Actions</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredEmployees.map((emp, index) => (
-              <TableRow
-                key={emp.id}
-                sx={{
-                  "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" },
-                  "&:hover": { backgroundColor: "#eef6ff" },
-                }}
-              >
-                <TableCell sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Avatar src={emp.avatar} alt={emp.name} />
-                  <Box>
-                    <Typography fontWeight="bold">{emp.name}</Typography>
-                    <Typography variant="body2" color="textSecondary">#000{index + 1}</Typography>
-                  </Box>
-                </TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>ST-00{index + 1}</TableCell>
-                <TableCell sx={{ color: "blue", cursor: "pointer" }}>{emp.email}</TableCell>
-                <TableCell>
-                  <Box sx={{
-                    display: "inline-block",
-                    backgroundColor: "#d4edda",
-                    color: "#155724",
-                    padding: "4px 10px",
-                    borderRadius: "5px",
-                    fontWeight: "bold"
-                  }}>
-                    Staff
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{
-                    display: "inline-block",
-                    backgroundColor: emp.status === "Active" ? "#d4edda" : "#fff3cd",
-                    color: emp.status === "Active" ? "#155724" : "#856404",
-                    padding: "4px 10px",
-                    borderRadius: "5px",
-                    fontWeight: "bold"
-                  }}>
-                    {emp.status}
-                  </Box>
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton onClick={(e) => handleMenuClick(e, emp)}>
-                    <MoreVert />
-                  </IconButton>
+            {employees.length > 0 ? (
+              employees.map((emp) => (
+                <TableRow key={emp.userId}>
+                  <TableCell>{emp.userName}</TableCell>
+                  <TableCell>{emp.userFullName || "-"}</TableCell>
+                  <TableCell>{roleMapping[emp.roleId]}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={(e) => handleMenuClick(e, emp)}>
+                      <MoreVert />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  No employees found
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
+
+
         </Table>
       </TableContainer>
 
+      <TablePagination
+        component="div"
+        count={filteredEmployees.length}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={() => { setEditingEmployee(selectedEmployee); setOpenForm(true); handleMenuClose(); }}>
-          <Edit fontSize="small" /> Edit
+        <MenuItem onClick={() => handleChangeRole(selectedEmployee)}>
+          <Edit fontSize="small" /> Change Role
         </MenuItem>
-        <MenuItem onClick={() => { handleDelete(selectedEmployee.id); handleMenuClose(); }}>
-          <Delete fontSize="small" color="error" /> Delete
+        <MenuItem onClick={() => handleSoftDelete(selectedEmployee.userId)}>
+          <Delete fontSize="small" color="error" /> Deactivate
         </MenuItem>
       </Menu>
+
 
       <EmployeeForm open={openForm} handleClose={() => setOpenForm(false)} onSave={handleSave} employee={editingEmployee} />
     </Box>

@@ -26,7 +26,7 @@ const Sidebar = () => {
   return (
     <Box
       sx={{
-        width: open ? 250 : 70, // Thay đổi width khi thu gọn
+        width: open ? 150 : 70, // Thay đổi width khi thu gọn
         height: "100vh",
         backgroundColor: "#F8F9FA",
         padding: open ? "20px" : "10px",
@@ -61,12 +61,13 @@ const Sidebar = () => {
               component={Link}
               to={item.path}
               sx={{
+                
                 borderRadius: "10px",
                 mb: 1,
                 backgroundColor: location.pathname === item.path ? "#E3F2FD" : "transparent",
                 color: location.pathname === item.path ? "#69E561" : "#333",
                 "&:hover": { backgroundColor: "#BEFDBA", color: "#69E561" },
-                justifyContent: open ? "flex-start" : "center", // Căn giữa icon khi thu gọn
+                justifyContent: open ? "flex-start" : "center",
               }}
             >
               <ListItemIcon

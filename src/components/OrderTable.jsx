@@ -1,42 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  TextField, Box, Typography, Button, IconButton, Chip, Menu, MenuItem
+  TextField, Box, Typography, Button, IconButton, Chip, Menu, MenuItem, TablePagination
 } from "@mui/material";
-import { Edit, Delete, Add, MoreVert } from "@mui/icons-material";
-import OrderForm from "./OrderForm";
+import { MoreVert } from "@mui/icons-material";
+import axios from "axios";
 
-const initialOrders = [
-  { id: 1, customerName: "Nguyễn Văn A", totalAmount: "500,000 VND", status: "Processing" },
-  { id: 2, customerName: "Trần Thị B", totalAmount: "1,200,000 VND", status: "Completed" },
-  { id: 3, customerName: "Lê Văn C", totalAmount: "750,000 VND", status: "Confirmed" },
-];
+const API_BASE_URL = "https://autochefsystem.azurewebsites.net/api/Order";
 
 const OrderTable = () => {
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
-  const [openForm, setOpenForm] = useState(false);
-  const [editingOrder, setEditingOrder] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+
+  useEffect(() => {
+    axios
+      .get(`${API_BASE_URL}/all?sort=true&page=${page + 1}&pageSize=${rowsPerPage}`)
+      .then((response) => {
+        console.log("API response:", response.data);
+        setOrders(response.data.orders || []);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi tải đơn hàng:", error);
+        setOrders([]);
+      });
+  }, [page, rowsPerPage]);
+
+
   const filteredOrders = orders.filter(order =>
-    order.customerName.toLowerCase().includes(search.toLowerCase())
+    order.orderId.toString().includes(search)
   );
 
-  const handleSave = (data) => {
-    if (editingOrder) {
-      setOrders(orders.map(order => (order.id === editingOrder.id ? { ...data, id: order.id } : order)));
-    } else {
-      setOrders([...orders, { ...data, id: Date.now() }]);
-    }
-    setOpenForm(false);
-    setEditingOrder(null);
-  };
-
-  const handleDelete = (id) => {
-    setOrders(orders.filter(order => order.id !== id));
-  };
 
   const handleMenuClick = (event, order) => {
     setAnchorEl(event.currentTarget);
@@ -47,58 +47,86 @@ const OrderTable = () => {
     setAnchorEl(null);
   };
 
+  const handleStatusChange = (newStatus) => {
+    if (!selectedOrder) return;
+
+    axios
+      .put(`${API_BASE_URL}/update-status/${selectedOrder.orderId}`, { status: newStatus })
+      .then((response) => {
+        console.log("Cập nhật trạng thái thành công:", response.data);
+
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.orderId === selectedOrder.orderId
+              ? {
+                ...order,
+                status: newStatus,
+                completedTime:
+                  newStatus === "Completed" || newStatus === "Canceled"
+                    ? new Date().toISOString()
+                    : order.completedTime,
+              }
+              : order
+          )
+        );
+      })
+      .catch((error) => {
+        console.error("Lỗi khi cập nhật trạng thái:", error);
+      })
+      .finally(() => {
+        handleMenuClose();
+      });
+  };
+
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   return (
     <Box sx={{ padding: 3 }}>
       <Typography variant="h5" sx={{ marginBottom: 2 }}>Order Management</Typography>
 
       <Box display="flex" justifyContent="space-between" marginBottom={2}>
-        <TextField label="Search order..." variant="outlined" size="small" onChange={(e) => setSearch(e.target.value)} />
-        <Button variant="contained" color="success" size="small" startIcon={<Add />} onClick={() => setOpenForm(true)}>
-          Add order
-        </Button>
+        <TextField
+          label="Search order by ID..."
+          variant="outlined"
+          size="small"
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </Box>
 
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table>
-          <TableHead sx={{ backgroundColor: "#f8f9fa" }}>
+          <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold" }}>Customer</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Total Amount</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }} align="center">Actions</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 100 }}>Order ID</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 120 }}>Recipe ID</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 120 }}>Robot ID</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 140 }}>Location ID</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 180 }}>Ordered Time</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 180 }}>Completed Time</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 120 }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 100 }} align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredOrders.map((order, index) => (
-              <TableRow
-                key={order.id}
-                sx={{
-                  "&:nth-of-type(odd)": { backgroundColor: "#f9f9f9" },
-                  "&:hover": { backgroundColor: "#eef6ff" },
-                }}
-              >
+            {filteredOrders.map((order) => (
+              <TableRow key={order.orderId}>
+                <TableCell>{order.orderId}</TableCell>
+                <TableCell>{order.recipeId}</TableCell>
+                <TableCell>{order.robotId}</TableCell>
+                <TableCell>{order.locationId}</TableCell>
+                <TableCell>{new Date(order.orderedTime).toLocaleString()}</TableCell>
+                <TableCell>{order.completedTime ? new Date(order.completedTime).toLocaleString() : "N/A"}</TableCell>
                 <TableCell>
-                  <Typography fontWeight="bold">{order.customerName}</Typography>
-                  <Typography variant="body2" color="textSecondary">#O000{index + 1}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{
-                    display: "inline-block",
-                    backgroundColor: "#e3f2fd",
-                    color: "#1976d2",
-                    padding: "4px 10px",
-                    borderRadius: "5px",
-                    fontWeight: "bold"
-                  }}>
-                    {order.totalAmount}
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Chip label={order.status} color={
-                    order.status === "Completed" ? "success" :
-                    order.status === "Confirmed" ? "primary" :
-                    order.status === "Processing" ? "warning" : "secondary"
-                  } />
+                  <Chip label={order.status} color={order.status === "Completed" ? "success" : "warning"} />
                 </TableCell>
                 <TableCell align="center">
                   <IconButton onClick={(e) => handleMenuClick(e, order)}>
@@ -111,16 +139,26 @@ const OrderTable = () => {
         </Table>
       </TableContainer>
 
+
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 20]}
+        component="div"
+        count={100}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+
+
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={() => { setEditingOrder(selectedOrder); setOpenForm(true); handleMenuClose(); }}>
-          <Edit fontSize="small" /> Edit
-        </MenuItem>
-        <MenuItem onClick={() => { handleDelete(selectedOrder.id); handleMenuClose(); }}>
-          <Delete fontSize="small" color="error" /> Delete
-        </MenuItem>
+        {["In Progress", "Completed", "Canceled"].map((status) => (
+          <MenuItem key={status} onClick={() => handleStatusChange(status)}>
+            {status}
+          </MenuItem>
+        ))}
       </Menu>
 
-      <OrderForm open={openForm} handleClose={() => setOpenForm(false)} onSave={handleSave} order={editingOrder} />
     </Box>
   );
 };

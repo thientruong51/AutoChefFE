@@ -8,6 +8,7 @@ import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import MainLayout from "./layouts/MainLayout";
 
 const PrivateRoute = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
@@ -24,32 +25,27 @@ const PrivateRoute = ({ children }) => {
 const App = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/*"
-          element={
-            <PrivateRoute>
-              <div style={{ display: "flex" }}>
-                <Sidebar />
-                <div style={{ flexGrow: 1 }}>
-                  <Navbar />
-                  <div style={{ padding: "20px" }}>
-                    <Routes>
-                      <Route path="/" element={<Dashboard />} />
-                      <Route path="/employees" element={<Employees />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route path="/orders" element={<Orders />} />
-                    </Routes>
-                  </div>
-                </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </Router>
+  <Routes>
+    <Route path="/register" element={<Register />} />
+    <Route path="/login" element={<Login />} />
+    
+    {/* Layout cố định */}
+    <Route
+      path="/"
+      element={
+        <PrivateRoute>
+          <MainLayout />
+        </PrivateRoute>
+      }
+    >
+      <Route index element={<Dashboard />} />
+      <Route path="employees" element={<Employees />} />
+      <Route path="products" element={<Products />} />
+      <Route path="orders" element={<Orders />} />
+    </Route>
+  </Routes>
+</Router>
+
   );
 };
 

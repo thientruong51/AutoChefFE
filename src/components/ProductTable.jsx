@@ -8,9 +8,9 @@ import ProductForm from "./ProductForm";
 
 const API_URL = "https://autochefsystem.azurewebsites.net/api/Recipe";
 
-const ProductTable = () => {
-  const [allRecipes, setAllRecipes] = useState([]); // Lưu toàn bộ sản phẩm
-  const [recipes, setRecipes] = useState([]); // Dữ liệu hiển thị sau khi lọc & phân trang
+const ProductTable = ({ formData }) => {
+  const [allRecipes, setAllRecipes] = useState([]); 
+  const [recipes, setRecipes] = useState([]); 
   const [search, setSearch] = useState("");
   const [openForm, setOpenForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState(null);
@@ -83,13 +83,28 @@ const ProductTable = () => {
   }, [search, sortOrder, page, allRecipes]);
 
   const handleSave = async (recipe) => {
+  
+
     try {
       const token = localStorage.getItem("token");
       const method = editingRecipe ? "PUT" : "POST";
       const url = editingRecipe ? `${API_URL}` : `${API_URL}/create`;
       const body = editingRecipe
-        ? { recipeId: editingRecipe.recipeId, recipeName: recipe.recipeName, ingredients: recipe.ingredients }
-        : { recipeName: recipe.recipeName, ingredients: recipe.ingredients };
+        ? {
+            recipeId: editingRecipe.recipeId,
+            recipeName: recipe.recipeName,
+            ingredients: recipe.ingredients,
+            description: recipe.description,
+            imageUrl: recipe.imageUrl,
+          }
+        : {
+            recipeName: recipe.recipeName,
+            ingredients: recipe.ingredients,
+            description: recipe.description,
+            imageUrl: recipe.imageUrl,
+          };
+
+      
 
       const response = await fetch(url, {
         method,
@@ -105,13 +120,13 @@ const ProductTable = () => {
       const newRecipe = await response.json();
 
       if (editingRecipe) {
-        // Cập nhật sản phẩm đã chỉnh sửa
-        setAllRecipes(prev =>
-          prev.map(item => item.recipeId === editingRecipe.recipeId ? newRecipe : item)
+        setAllRecipes((prev) =>
+          prev.map((item) =>
+            item.recipeId === editingRecipe.recipeId ? newRecipe : item
+          )
         );
       } else {
-        // Thêm sản phẩm mới
-        setAllRecipes(prev => [newRecipe, ...prev]);
+        setAllRecipes((prev) => [newRecipe, ...prev]);
       }
 
       setOpenForm(false);
@@ -121,6 +136,8 @@ const ProductTable = () => {
       console.error("Error saving recipe:", error);
     }
   };
+
+  
 
   const handleDelete = async (id) => {
     try {
@@ -141,9 +158,10 @@ const ProductTable = () => {
   return (
     <Box sx={{ padding: 3 }}>
       <Typography variant="h5" sx={{ marginBottom: 2 }}>Product Management</Typography>
-      <Box display="flex" justifyContent="space-between" marginBottom={2}>
+      <Box display="flex"justifyContent="space-between" marginBottom={2}>
         <TextField label="Search product..." size="small" variant="outlined" value={search} onChange={(e) => setSearch(e.target.value)} />
-        <FormControl size="small" sx={{ minWidth: 150 }}>
+        <Box >
+        <FormControl size="small" sx={{ minWidth: 100, marginRight:3 }} >
           <InputLabel>Sort By</InputLabel>
           <Select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
             <MenuItem value="newest">Newest</MenuItem>
@@ -151,25 +169,32 @@ const ProductTable = () => {
             <MenuItem value="alphabet">A-Z</MenuItem>
           </Select>
         </FormControl>
-        <Button variant="contained" size="small" color="success" startIcon={<Add />} onClick={() => setOpenForm(true)}>
+        <Button variant="contained" size="medium" color="success" startIcon={<Add />} onClick={() => setOpenForm(true)}>
           Add new product
         </Button>
+        </Box>
       </Box>
 
       <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
         <Table>
           <TableHead sx={{ backgroundColor: "#f8f9fa" }}>
             <TableRow>
+            <TableCell sx={{ fontWeight: "bold" }}>Image</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Product</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Ingredients</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
               <TableCell sx={{ fontWeight: "bold" }} align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {recipes.map((recipe, index) => (
               <TableRow key={recipe.recipeId || `temp-${index}`}>
+                <TableCell>
+        {recipe.imageUrl && <img src={recipe.imageUrl} alt="Recipe" style={{ width: 100, height: 100 }} />}
+      </TableCell>
                 <TableCell>{recipe.recipeName}</TableCell>
                 <TableCell>{recipe.ingredients}</TableCell>
+                <TableCell>{recipe.description}</TableCell>
                 <TableCell align="center">
                   <IconButton onClick={(e) => { setAnchorEl(e.currentTarget); setSelectedRecipe(recipe); }}>
                     <MoreVert />
