@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 
 const EmployeeForm = ({ open, handleClose, onSave, employee }) => {
   const [formData, setFormData] = useState({
-    name: "",
-    position: "",
-    email: "",
-    avatar: "",
+    userName: "",
+    roleId: "",
+    password: "",
+    userImage: "",
   });
 
   useEffect(() => {
     if (employee) {
       setFormData(employee);
     } else {
-      setFormData({ name: "", position: "", email: "", avatar: "" });
+      setFormData({ userName: "", roleId: "", password: "", userImage: "" });
     }
   }, [employee]);
 
@@ -27,14 +36,52 @@ const EmployeeForm = ({ open, handleClose, onSave, employee }) => {
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>{employee ? "Edit staff" : "Add new employee"}</DialogTitle>
       <DialogContent>
-        <TextField label="Name" name="name" fullWidth margin="dense" value={formData.name} onChange={handleChange} />
-        <TextField label="Position" name="position" fullWidth margin="dense" value={formData.position} onChange={handleChange} />
-        <TextField label="Email" name="email" fullWidth margin="dense" value={formData.email} onChange={handleChange} />
-        <TextField label="Avatar (URL)" name="avatar" fullWidth margin="dense" value={formData.avatar} onChange={handleChange} />
+        <TextField
+          label="Name"
+          name="userName"
+          fullWidth
+          margin="dense"
+          value={formData.userName}
+          onChange={handleChange}
+        />
+        <FormControl fullWidth margin="dense">
+          <InputLabel id="role-select-label">Position</InputLabel>
+          <Select
+            labelId="role-select-label"
+            name="roleId"
+            value={formData.roleId}
+            onChange={handleChange}
+            label="Position"
+          >
+            <MenuItem value={1}>Admin</MenuItem>
+            <MenuItem value={2}>Staff</MenuItem>
+            <MenuItem value={3}>Manager</MenuItem>
+          </Select>
+        </FormControl>
+        <TextField
+          label="Password"
+          name="password"
+          fullWidth
+          margin="dense"
+          value={formData.password}
+          onChange={handleChange}
+        />
+        <TextField
+          label="Avatar (URL)"
+          name="userImage"
+          fullWidth
+          margin="dense"
+          value={formData.userImage}
+          onChange={handleChange}
+        />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="error">Cancel</Button>
-        <Button onClick={() => onSave(formData)} color="primary">Save</Button>
+        <Button onClick={handleClose} color="error">
+          Cancel
+        </Button>
+        <Button onClick={() => onSave(formData)} color="primary">
+          Save
+        </Button>
       </DialogActions>
     </Dialog>
   );

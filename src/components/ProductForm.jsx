@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material";
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  Button, 
+  TextField, 
+  FormControlLabel, 
+  Switch 
+} from "@mui/material";
 import axios from "axios";
 
 const ProductForm = ({ open, handleClose, onSave, product }) => {
@@ -7,8 +16,9 @@ const ProductForm = ({ open, handleClose, onSave, product }) => {
     recipeId: 0,
     recipeName: "",
     ingredients: "",
-    description:"",
-    imageUrl: "", 
+    description: "",
+    imageUrl: "",
+    isActive: true,
   });
 
   const [uploading, setUploading] = useState(false);
@@ -17,7 +27,14 @@ const ProductForm = ({ open, handleClose, onSave, product }) => {
     if (product) {
       setFormData(product);
     } else {
-      setFormData({ recipeId: 0, recipeName: "", ingredients: "", description:"", imageUrl: "" });
+      setFormData({
+        recipeId: 0,
+        recipeName: "",
+        ingredients: "",
+        description: "",
+        imageUrl: "",
+        isActive: true,
+      });
     }
   }, [product]);
 
@@ -40,14 +57,12 @@ const ProductForm = ({ open, handleClose, onSave, product }) => {
         formDataUpload
       );
   
-     
       console.log("Uploaded image URL:", res.data.secure_url);
   
-      setFormData((prev) => {
-        const updated = { ...prev, imageUrl: res.data.secure_url };
-        
-        return updated;
-      });
+      setFormData((prev) => ({
+        ...prev,
+        imageUrl: res.data.secure_url,
+      }));
       
     } catch (err) {
       console.error("Upload failed:", err.response?.data || err.message);
@@ -55,8 +70,6 @@ const ProductForm = ({ open, handleClose, onSave, product }) => {
       setUploading(false);
     }
   };
-  
-  
 
   return (
     <Dialog open={open} onClose={handleClose}>
@@ -87,6 +100,21 @@ const ProductForm = ({ open, handleClose, onSave, product }) => {
           value={formData.description}
           onChange={handleChange}
         />
+        
+        {/* Switch để chỉnh sửa isActive */}
+        <FormControlLabel
+          control={
+            <Switch
+              checked={formData.isActive}
+              onChange={(e, checked) =>
+                setFormData({ ...formData, isActive: checked })
+              }
+              color="primary"
+            />
+          }
+          label="Active"
+        />
+
         <input type="file" onChange={handleImageUpload} style={{ marginTop: 16 }} />
         {uploading && <p>Uploading...</p>}
         {formData.imageUrl && (

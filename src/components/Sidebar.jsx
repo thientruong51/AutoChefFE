@@ -1,33 +1,55 @@
-import React, { useState } from "react";
-import { List, ListItem, ListItemIcon, ListItemText, Divider, Typography, Box, IconButton, Tooltip } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Typography,
+  Box,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
 import { Dashboard, People, Menu as MenuIcon, ChevronLeft } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 import RamenDiningIcon from "@mui/icons-material/RamenDining";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
 const Sidebar = () => {
   const location = useLocation();
-  const [open, setOpen] = useState(true); // State quản lý sidebar mở hay thu gọn
+  const [open, setOpen] = useState(true);
+
+  // Lấy roleId từ localStorage (chuyển về số)
+  const [roleId, setRoleId] = useState(null);
+  useEffect(() => {
+    const storedRoleId = localStorage.getItem("roleId");
+    if (storedRoleId) {
+      setRoleId(Number(storedRoleId));
+    }
+  }, []);
 
   const toggleSidebar = () => {
     setOpen(!open);
   };
 
+  // Định nghĩa các menu item với thuộc tính roles
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/" },
-    { text: "Employee", icon: <People />, path: "/employees" },
-    { text: "Product", icon: <RamenDiningIcon />, path: "/products" },
-    { text: "Order", icon: <ListAltIcon />, path: "/orders" },
-    { text: "RecipeStep", icon: <ListAltIcon />, path: "/recipeSteps" },
+    { text: "Dashboard", icon: <Dashboard />, path: "/", roles: [1, 3] },
+    { text: "Employee", icon: <People />, path: "/employees", roles: [1] },
+    { text: "Product", icon: <RamenDiningIcon />, path: "/products", roles: [3] },
+    { text: "Order", icon: <ListAltIcon />, path: "/orders", roles: [3] },
+    { text: "RecipeStep", icon: <ListAltIcon />, path: "/recipeSteps", roles: [1] },
   ];
+
+  // Lọc các menu item dựa vào roleId
+  const filteredMenuItems = roleId
+    ? menuItems.filter((item) => item.roles.includes(roleId))
+    : [];
 
   return (
     <Box
       sx={{
-        width: open ? 150 : 70, // Thay đổi width khi thu gọn
+        width: open ? 150 : 70,
         height: "100vh",
         backgroundColor: "#F8F9FA",
         padding: open ? "20px" : "10px",
@@ -37,32 +59,34 @@ const Sidebar = () => {
         overflow: "hidden",
       }}
     >
-      
-
-      {/* Logo & Title */}
-      <Box sx={{ textAlign: "center", mb: 3, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box
+        sx={{
+          textAlign: "center",
+          mb: 3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <img src="src/assets/logo.png" alt="Logo" width="40" height="40" />
         {open && (
           <Typography variant="h6" fontWeight="bold" sx={{ ml: 1 }}>
             AutoChef
           </Typography>
         )}
-        {/* Toggle Button */}
-      <IconButton onClick={toggleSidebar} sx={{ alignSelf: open ? "flex-end" : "center" }}>
-        {open ? <ChevronLeft /> : <MenuIcon />}
-      </IconButton>
+        <IconButton onClick={toggleSidebar} sx={{ alignSelf: open ? "flex-end" : "center" }}>
+          {open ? <ChevronLeft /> : <MenuIcon />}
+        </IconButton>
       </Box>
 
-      {/* Main Menu */}
       <List>
-        {menuItems.map((item) => (
+        {filteredMenuItems.map((item) => (
           <Tooltip title={!open ? item.text : ""} placement="right" key={item.text}>
             <ListItem
               button
               component={Link}
               to={item.path}
               sx={{
-
                 borderRadius: "10px",
                 mb: 1,
                 backgroundColor: location.pathname === item.path ? "#E3F2FD" : "transparent",

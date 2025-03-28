@@ -6,7 +6,7 @@ import {
 import { MoreVert } from "@mui/icons-material";
 import axios from "axios";
 
-const API_BASE_URL = "https://autochefsystem.azurewebsites.net/api/Order";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/Order`;
 
 const OrderTable = () => {
   const [orders, setOrders] = useState([]);
@@ -38,45 +38,13 @@ const OrderTable = () => {
   );
 
 
-  const handleMenuClick = (event, order) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedOrder(order);
-  };
+
 
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  const handleStatusChange = (newStatus) => {
-    if (!selectedOrder) return;
 
-    axios
-      .put(`${API_BASE_URL}/update-status/${selectedOrder.orderId}`, { status: newStatus })
-      .then((response) => {
-        console.log("Cập nhật trạng thái thành công:", response.data);
-
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.orderId === selectedOrder.orderId
-              ? {
-                ...order,
-                status: newStatus,
-                completedTime:
-                  newStatus === "Completed" || newStatus === "Canceled"
-                    ? new Date().toISOString()
-                    : order.completedTime,
-              }
-              : order
-          )
-        );
-      })
-      .catch((error) => {
-        console.error("Lỗi khi cập nhật trạng thái:", error);
-      })
-      .finally(() => {
-        handleMenuClose();
-      });
-  };
 
 
   const handleChangePage = (event, newPage) => {
@@ -107,32 +75,35 @@ const OrderTable = () => {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 100 }}>Order ID</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 120 }}>Recipe ID</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 120 }}>Recipe Name</TableCell>
               <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 120 }}>Robot ID</TableCell>
               <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 140 }}>Location ID</TableCell>
               <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 180 }}>Ordered Time</TableCell>
               <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 180 }}>Completed Time</TableCell>
               <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 120 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap", minWidth: 100 }} align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredOrders.map((order) => (
               <TableRow key={order.orderId}>
                 <TableCell>{order.orderId}</TableCell>
-                <TableCell>{order.recipeId}</TableCell>
+                <TableCell>{order.recipeName}</TableCell>
                 <TableCell>{order.robotId}</TableCell>
                 <TableCell>{order.locationId}</TableCell>
                 <TableCell>{new Date(order.orderedTime).toLocaleString()}</TableCell>
                 <TableCell>{order.completedTime ? new Date(order.completedTime).toLocaleString() : "N/A"}</TableCell>
                 <TableCell>
-                  <Chip label={order.status} color={order.status === "Completed" ? "success" : "warning"} />
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton onClick={(e) => handleMenuClick(e, order)}>
-                    <MoreVert />
-                  </IconButton>
-                </TableCell>
+                  <Chip
+                    label={order.status}
+                    color={
+                      order.status === "Completed"
+                        ? "success"
+                        : order.status === "pending"
+                          ? "primary"
+                          : order.status === "Processing"    ? "primary" : 
+                          order.status === "Cancel"   ? "error" : "warning" 
+                    }
+                  />                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -152,7 +123,7 @@ const OrderTable = () => {
 
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        {["In Progress", "Completed", "Canceled"].map((status) => (
+        {["Procressing", "Completed", "Canceled"].map((status) => (
           <MenuItem key={status} onClick={() => handleStatusChange(status)}>
             {status}
           </MenuItem>

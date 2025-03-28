@@ -6,7 +6,7 @@ import {
 import { Edit, Delete, Add, MoreVert } from "@mui/icons-material";
 import ProductForm from "./ProductForm";
 
-const API_URL = "https://autochefsystem.azurewebsites.net/api/Recipe";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ProductTable = ({ formData }) => {
   const [allRecipes, setAllRecipes] = useState([]); 
@@ -30,7 +30,7 @@ const ProductTable = ({ formData }) => {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Missing authentication token");
   
-      const url = new URL(`${API_URL}/all`);
+      const url = new URL(`${API_URL}/Recipe/all`);
       url.searchParams.append("page", page);
       url.searchParams.append("pageSize", pageSize); 
   
@@ -88,7 +88,7 @@ const ProductTable = ({ formData }) => {
     try {
       const token = localStorage.getItem("token");
       const method = editingRecipe ? "PUT" : "POST";
-      const url = editingRecipe ? `${API_URL}` : `${API_URL}/create`;
+      const url = editingRecipe ? `${API_URL}/Recipe` : `${API_URL}/Recipe/create`;
       const body = editingRecipe
         ? {
             recipeId: editingRecipe.recipeId,
@@ -96,12 +96,14 @@ const ProductTable = ({ formData }) => {
             ingredients: recipe.ingredients,
             description: recipe.description,
             imageUrl: recipe.imageUrl,
+            isActive: recipe.isActive
           }
         : {
             recipeName: recipe.recipeName,
             ingredients: recipe.ingredients,
             description: recipe.description,
             imageUrl: recipe.imageUrl,
+            isActive: recipe.isActive
           };
 
       
@@ -183,6 +185,7 @@ const ProductTable = ({ formData }) => {
               <TableCell sx={{ fontWeight: "bold" }}>Product</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Ingredients</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Active</TableCell>
               <TableCell sx={{ fontWeight: "bold" }} align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -195,6 +198,8 @@ const ProductTable = ({ formData }) => {
                 <TableCell>{recipe.recipeName}</TableCell>
                 <TableCell>{recipe.ingredients}</TableCell>
                 <TableCell>{recipe.description}</TableCell>
+                <TableCell>{recipe.isActive ? "Active" : "Inactive"}</TableCell>
+
                 <TableCell align="center">
                   <IconButton onClick={(e) => { setAnchorEl(e.currentTarget); setSelectedRecipe(recipe); }}>
                     <MoreVert />

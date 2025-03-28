@@ -1,31 +1,137 @@
-import React from "react";
-import { Grid } from "@mui/material";
-import StatsCard from "../components/StatsCard";
-import Chart from "../components/Chart";
-import { AttachMoney, People, ShoppingCart, BarChart } from "@mui/icons-material";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Tabs,
+  Tab,
+  Typography,
+  CircularProgress,
+  Grid,
+  Card,
+  CardContent,
+} from "@mui/material";
+import "chart.js/auto";
+import { Bar } from "react-chartjs-2";
+
+import OrderDashboard from "../components/OrderDashboard";
+import RobotDashboard from "../components/RobotDashboard";
 
 const Dashboard = () => {
-  return (
-    <Grid container spacing={3} sx={{ padding: 3 }}>
-      {/* Stats Cards */}
-      <Grid item xs={12} sm={6} md={3}>
-        <StatsCard title="Revenue" value="$53,000" percentage="+55%" icon={<AttachMoney />} color="#4CAF50" />
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <StatsCard title="User" value="2,300" percentage="+5%" icon={<People />} color="#2196F3" />
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <StatsCard title="Order" value="3,020" percentage="-14%" icon={<ShoppingCart />} color="#FF9800" />
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <StatsCard title="Profit" value="$173,000" percentage="+8%" icon={<BarChart />} color="#9C27B0" />
-      </Grid>
+  const [tabIndex, setTabIndex] = useState(0);
 
-      {/* Biểu đồ doanh thu */}
-      <Grid item xs={12}>
-        <Chart />
-      </Grid>
-    </Grid>
+  const [loading, setLoading] = useState(false);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [recipeCounts, setRecipeCounts] = useState({});
+
+  const baseUrl = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    fetchAllTimeStats();
+  }, []);
+
+  const fetchAllTimeStats = async () => {
+    setLoading(true);
+
+    const start = new Date("2025-02-01"); 
+    const today = new Date();
+    let current = new Date(start);
+
+    let sumOrders = 0;        
+    let recipeMap = {};        
+
+    while (current <= today) {
+      const dateStr = current.toISOString().split("T")[0];
+
+      try {
+        const resOrders = await fetch(`${baseUrl}/Dashboard/orders/count?date=${dateStr}`);
+        const ordersCount = await resOrders.json();
+        sumOrders += ordersCount || 0;
+      } catch (error) {
+        console.error("Error fetching orders count:", error);
+      }
+
+      try {
+        const resRecipes = await fetch(`${baseUrl}/Dashboard/recipe-counts?date=${dateStr}`);
+        const dataRecipes = await resRecipes.json();
+        Object.entries(dataRecipes || {}).forEach(([recipe, count]) => {
+          recipeMap[recipe] = (recipeMap[recipe] || 0) + count;
+        });
+      } catch (error) {
+        console.error("Error fetching recipe counts:", error);
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    setTotalOrders(sumOrders);
+    setRecipeCounts(recipeMap);
+    setLoading(false);
+  };
+
+  const chartDataRecipes = {
+    labels: Object.keys(recipeCounts),
+    datasets: [
+      {
+        label: "Orders Counts",
+        data: Object.values(recipeCounts),
+        backgroundColor: "rgba(22, 230, 85, 0.6)",
+      },
+    ],
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabIndex(newValue);
+  };
+
+  return (
+    <Box sx={{ padding: 3 }}>
+      <Typography variant="h4" sx={{ marginBottom: 3 }}>
+        Dashboard
+      </Typography>
+
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <Box sx={{ marginBottom: 4 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Total of Orders:
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                    {totalOrders}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                  Order Volume by Food Category:
+                  </Typography>
+                  {Object.keys(recipeCounts).length === 0 ? (
+                    <Typography>No Data</Typography>
+                  ) : (
+                    <Box sx={{ maxWidth: 600 }}>
+                      <Bar data={chartDataRecipes} />
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
+      )}
+
+      <Tabs value={tabIndex} onChange={handleTabChange} sx={{ mb: 2 }}>
+        <Tab label="Order Management" />
+        <Tab label="Robot Management" />
+      </Tabs>
+      {tabIndex === 0 && <OrderDashboard />}
+      {tabIndex === 1 && <RobotDashboard />}
+    </Box>
   );
 };
 

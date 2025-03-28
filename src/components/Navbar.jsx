@@ -22,9 +22,8 @@ const Navbar = () => {
 
   const location = useLocation();
 
-  // Lấy tên page từ đường dẫn
   const getPageTitle = (pathname) => {
-    const segments = pathname.split("/").filter(Boolean); // Loại bỏ khoảng trắng
+    const segments = pathname.split("/").filter(Boolean); 
     return segments.length > 0 ? segments[segments.length - 1] : "Dashboard";
   };
 
@@ -41,7 +40,6 @@ const Navbar = () => {
       }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {/* Breadcrumb */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Typography variant="body3" sx={{ color: "#94A3B8", fontWeight: "bold" }}>
             Pages/
@@ -53,7 +51,6 @@ const Navbar = () => {
 
 
         <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
-          {/* Icons + User */}
           <Box sx={{ display: "flex", alignItems: "center", marginLeft: "auto" }}>
             <Box
               sx={{
@@ -64,7 +61,7 @@ const Navbar = () => {
                 padding: "5px 10px",
                 boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
                 width: "200px",
-                marginRight: "16px", // Khoảng cách giữa search box và icon user
+                marginRight: "16px",
               }}
             >
               <Search sx={{ color: "#64748B" }} />
@@ -80,7 +77,6 @@ const Navbar = () => {
         </Box>
 
 
-        {/* Dropdown Menu */}
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
           <MenuItem onClick={handleLogout}>Log out</MenuItem>
