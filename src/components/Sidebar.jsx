@@ -68,7 +68,7 @@ const Sidebar = () => {
           justifyContent: "center",
         }}
       >
-        <img src="src/assets/logo.png" alt="Logo" width="40" height="40" />
+        <img src="https://res.cloudinary.com/dkfykdjlm/image/upload/v1741164153/of8hip09b0xrbxhjbvft.png" alt="Logo" width="40" height="40" />
         {open && (
           <Typography variant="h6" fontWeight="bold" sx={{ ml: 1 }}>
             AutoChef

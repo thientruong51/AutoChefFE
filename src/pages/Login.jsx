@@ -222,7 +222,7 @@ const Login = () => {
           borderBottomLeftRadius: 20,
         }}
       >
-        <img src="src/assets/logo.png" alt="Chakra Logo" width={380} height={380} />
+        <img src="https://res.cloudinary.com/dkfykdjlm/image/upload/v1741164153/of8hip09b0xrbxhjbvft.png" alt="Logo" width={380} height={380} />
       </Box>
     </Box>
   );
