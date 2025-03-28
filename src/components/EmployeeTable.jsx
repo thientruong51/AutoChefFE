@@ -30,8 +30,8 @@ const API_URL = `${import.meta.env.VITE_API_URL}/Users`;
 
 const roleMapping = {
   1: "Admin",
-  2: "Staff",
-  3: "Manager",
+  3: "Staff",
+  2: "Manager",
 };
 
 const EmployeeTable = () => {
@@ -267,8 +267,8 @@ const EmployeeTable = () => {
               label="Position"
             >
               <MenuItem value={1}>Admin</MenuItem>
-              <MenuItem value={2}>Staff</MenuItem>
-              <MenuItem value={3}>Manager</MenuItem>
+              <MenuItem value={3}>Staff</MenuItem>
+              <MenuItem value={2}>Manager</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>

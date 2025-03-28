@@ -54,8 +54,8 @@ const EmployeeForm = ({ open, handleClose, onSave, employee }) => {
             label="Position"
           >
             <MenuItem value={1}>Admin</MenuItem>
-            <MenuItem value={2}>Staff</MenuItem>
-            <MenuItem value={3}>Manager</MenuItem>
+            <MenuItem value={3}>Staff</MenuItem>
+            <MenuItem value={2}>Manager</MenuItem>
           </Select>
         </FormControl>
         <TextField

@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { auth, provider, signInWithPopup } from "../firebaseConfig";
 
-// Hàm tự giải mã token JWT và trả về payload dưới dạng JSON
 const parseJwt = (token) => {
   try {
     const base64Url = token.split(".")[1];
@@ -38,7 +37,6 @@ const Login = () => {
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  // Gọi API getUserById để lấy thông tin người dùng và roleId
   const fetchUserById = async (token, userId) => {
     try {
       const response = await fetch(`${apiUrl}/Users?id=${userId}`, {
@@ -51,7 +49,6 @@ const Login = () => {
       if (response.ok) {
         const data = await response.json();
         console.log("User data fetched:", data);
-        // Giả sử dữ liệu trả về là một đối tượng chứa roleId
         if (data && data.roleId !== undefined) {
           localStorage.setItem("roleId", data.roleId);
           console.log("Fetched roleId:", data.roleId);
@@ -66,7 +63,6 @@ const Login = () => {
     }
   };
 
-  // Sau khi nhận token, lưu token và gọi API getUserById sử dụng userId lấy từ token payload
   const saveTokenAndFetchRole = async (token) => {
     localStorage.setItem("token", token);
     const decoded = parseJwt(token);

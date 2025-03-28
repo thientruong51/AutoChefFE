@@ -19,7 +19,6 @@ const Sidebar = () => {
   const location = useLocation();
   const [open, setOpen] = useState(true);
 
-  // Lấy roleId từ localStorage (chuyển về số)
   const [roleId, setRoleId] = useState(null);
   useEffect(() => {
     const storedRoleId = localStorage.getItem("roleId");
@@ -32,16 +31,14 @@ const Sidebar = () => {
     setOpen(!open);
   };
 
-  // Định nghĩa các menu item với thuộc tính roles
   const menuItems = [
-    { text: "Dashboard", icon: <Dashboard />, path: "/", roles: [1, 3] },
+    { text: "Dashboard", icon: <Dashboard />, path: "/", roles: [1, 2] },
     { text: "Employee", icon: <People />, path: "/employees", roles: [1] },
-    { text: "Product", icon: <RamenDiningIcon />, path: "/products", roles: [3] },
-    { text: "Order", icon: <ListAltIcon />, path: "/orders", roles: [3] },
+    { text: "Product", icon: <RamenDiningIcon />, path: "/products", roles: [2] },
+    { text: "Order", icon: <ListAltIcon />, path: "/orders", roles: [2] },
     { text: "RecipeStep", icon: <ListAltIcon />, path: "/recipeSteps", roles: [1] },
   ];
 
-  // Lọc các menu item dựa vào roleId
   const filteredMenuItems = roleId
     ? menuItems.filter((item) => item.roles.includes(roleId))
     : [];

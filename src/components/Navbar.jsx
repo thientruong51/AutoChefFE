@@ -29,9 +29,9 @@ const Navbar = () => {
     switch (roleId) {
       case 1:
         return "Admin";
-      case 2:
-        return "Staff";
       case 3:
+        return "Staff";
+      case 2:
         return "Manager";
       default:
         return "Unknown";

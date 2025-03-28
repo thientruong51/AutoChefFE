@@ -28,7 +28,7 @@ const Register = () => {
     setLoading(true);
     setError("");
   
-    const requestData = { ...user, roleId: 3 };
+    const requestData = { ...user, roleId: 2 };
   
     try {
       const response = await fetch(`${API_URL}/Users`, {
