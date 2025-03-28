@@ -1,11 +1,42 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AppBar, Toolbar, Typography, InputBase, Box, IconButton, Avatar, Menu, MenuItem } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  InputBase,
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+} from "@mui/material";
 import { Search, Notifications, Settings, Person } from "@mui/icons-material";
-import { useLocation } from "react-router-dom";
+
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    const storedRoleId = Number(localStorage.getItem("roleId"));
+  
+    setRole(getRoleName(storedRoleId));
+  }, []);
+  
+
+  const getRoleName = (roleId) => {
+    switch (roleId) {
+      case 1:
+        return "Admin";
+      case 2:
+        return "Staff";
+      case 3:
+        return "Manager";
+      default:
+        return "Unknown";
+    }
+  };
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -16,14 +47,12 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
-  const location = useLocation();
-
   const getPageTitle = (pathname) => {
-    const segments = pathname.split("/").filter(Boolean); 
+    const segments = pathname.split("/").filter(Boolean);
     return segments.length > 0 ? segments[segments.length - 1] : "Dashboard";
   };
 
@@ -45,10 +74,9 @@ const Navbar = () => {
             Pages/
           </Typography>
           <Typography variant="body3" sx={{ color: "#1E293B", fontWeight: "bold", marginLeft: "4px" }}>
-          {pageTitle}
+            {pageTitle}
           </Typography>
         </Box>
-
 
         <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
           <Box sx={{ display: "flex", alignItems: "center", marginLeft: "auto" }}>
@@ -71,14 +99,14 @@ const Navbar = () => {
             <Typography sx={{ fontWeight: "bold", fontSize: "14px", cursor: "pointer" }} onClick={handleMenuOpen}>
               <Person sx={{ fontSize: 20, marginRight: 1 }} />
             </Typography>
+
             <Settings sx={{ fontSize: 20, marginLeft: 2, cursor: "pointer" }} />
             <Notifications sx={{ fontSize: 20, marginLeft: 2, cursor: "pointer" }} />
           </Box>
         </Box>
 
-
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-          <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+          <MenuItem onClick={handleMenuClose}>{role}</MenuItem>
           <MenuItem onClick={handleLogout}>Log out</MenuItem>
         </Menu>
       </Toolbar>
