@@ -17,9 +17,9 @@ import RobotDashboard from "../components/RobotDashboard";
 
 const Dashboard = () => {
   const [tabIndex, setTabIndex] = useState(0);
-
   const [loading, setLoading] = useState(false);
   const [totalOrders, setTotalOrders] = useState(0);
+  const [totalCancelled, setTotalCancelled] = useState(0);
   const [recipeCounts, setRecipeCounts] = useState({});
 
   const baseUrl = import.meta.env.VITE_API_URL;
@@ -31,12 +31,13 @@ const Dashboard = () => {
   const fetchAllTimeStats = async () => {
     setLoading(true);
 
-    const start = new Date("2025-02-01"); 
+    const start = new Date("2025-02-01");
     const today = new Date();
     let current = new Date(start);
 
-    let sumOrders = 0;        
-    let recipeMap = {};        
+    let sumOrders = 0;
+    let sumCancelled = 0;
+    let recipeMap = {};
 
     while (current <= today) {
       const dateStr = current.toISOString().split("T")[0];
@@ -47,6 +48,14 @@ const Dashboard = () => {
         sumOrders += ordersCount || 0;
       } catch (error) {
         console.error("Error fetching orders count:", error);
+      }
+
+      try {
+        const resCancelled = await fetch(`${baseUrl}/Dashboard/orders/countByStatus?date=${dateStr}&status=cancelled`);
+        const cancelledCount = await resCancelled.json();
+        sumCancelled += cancelledCount || 0;
+      } catch (error) {
+        console.error("Error fetching cancelled orders count:", error);
       }
 
       try {
@@ -63,6 +72,7 @@ const Dashboard = () => {
     }
 
     setTotalOrders(sumOrders);
+    setTotalCancelled(sumCancelled);
     setRecipeCounts(recipeMap);
     setLoading(false);
   };
@@ -96,12 +106,22 @@ const Dashboard = () => {
             <Grid item xs={12} md={4}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom color="success">
                     Total of Orders:
                   </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                  <Typography variant="h5" sx={{ fontWeight: "bold" }} color="success">
                     {totalOrders}
                   </Typography>
+                 
+                </CardContent>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom color="red">
+                  Cancelled Orders:
+                  </Typography>
+                  <Typography variant="h5" sx={{ fontWeight: "bold" }} color="red">
+                  {totalCancelled}
+                  </Typography>
+                  
                 </CardContent>
               </Card>
             </Grid>
@@ -109,7 +129,7 @@ const Dashboard = () => {
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                  Order Volume by Food Category:
+                    Order Volume by Food Category:
                   </Typography>
                   {Object.keys(recipeCounts).length === 0 ? (
                     <Typography>No Data</Typography>

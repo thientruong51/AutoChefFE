@@ -44,7 +44,6 @@ const OrderDashboard = () => {
     while (current <= today) {
       const dateStr = current.toISOString().split("T")[0];
 
-      // Gọi API Orders Count
       try {
         const resOrders = await fetch(
           `${baseUrl}/Dashboard/orders/count?date=${dateStr}`
@@ -55,7 +54,6 @@ const OrderDashboard = () => {
         ordersData.push({ date: dateStr, count: 0 });
       }
 
-      // Gọi API Recipe Counts (dữ liệu dạng object, ví dụ: { "Mì Quảng": 4, "Phở bò": 2 })
       try {
         const resRecipes = await fetch(
           `${baseUrl}/Dashboard/recipe-counts?date=${dateStr}`
